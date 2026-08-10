@@ -1,38 +1,34 @@
-# Agent Task Compiler (`taskc`)
+# Agent Task Compiler（`taskc`）
 
-`taskc` compiles ambiguous or incomplete natural-language requests against a
-catalog of capability contracts. It returns either a validated
-`DispatchReadyIntent` or deterministic diagnostics and a minimal clarification
-plan.
+`taskc` 面向能力契约目录，将含糊或不完整的自然语言请求编译为可验证的任务意图。编译结果要么是经过校验的 `DispatchReadyIntent`，要么是确定性的诊断信息和最小澄清计划。
 
-> **A `ready` result is not authorization.** This project only determines
-> whether a task description contains enough information to be dispatched to a
-> compatible agent. It does not authorize, execute, govern, audit, sandbox, or
-> replay agent actions.
+> **`ready` 结果不代表授权。** 本项目只判断任务描述是否包含足够信息，可以交给兼容的 Agent 进行调度；不会授权、执行、治理、审计、沙箱隔离或重放 Agent 行为。
 
-The package targets Python 3.11+ and has no Agent-framework runtime dependency.
+本项目需要 Python 3.11 或更高版本，不依赖任何 Agent 框架运行时。
 
-## Repository status
+## 仓库状态
 
-This repository contains the TaskFront / Agent Task Compiler MVP 0.1
-implementation. The current baseline includes the deterministic compiler core,
-strict capability-contract validation, static and structured-model Provider
-interfaces, clarification sessions, CLI commands, JSON Schemas, examples, and
-tests.
+本仓库包含 TaskFront / Agent Task Compiler MVP 0.1 的实现。目前已具备：
 
-Validation status for this baseline:
+- 确定性的任务编译核心；
+- 严格的能力契约校验；
+- 静态 Provider 和结构化模型 Provider 接口；
+- 澄清会话；
+- 命令行工具；
+- JSON Schema；
+- 示例与自动化测试。
 
-- 44 automated tests passing;
-- 22/22 public evaluation scenarios passing;
-- Python 3.11+ package and editable installation verified;
-- offline static-provider path available without an Agent framework;
-- `ready` remains a dispatch-readiness result, not authorization or execution.
+当前基线验证结果：
 
-The repository is intentionally limited to task compilation. It does not run
-agent tasks, call real tools, manage credentials or permissions, execute model
-generated code, or provide workflow orchestration.
+- 44 个自动化测试通过；
+- 公开评测场景 22/22 通过；
+- Python 3.11+ 安装和可编辑安装已验证；
+- 无需 Agent 框架即可使用离线静态 Provider；
+- `ready` 仍然只表示可以调度，不表示授权或执行。
 
-## Quick start
+本仓库有意将范围限定在“任务编译”。它不会运行 Agent 任务、调用真实工具、管理凭据或权限、执行模型生成的代码，也不提供工作流编排。
+
+## 快速开始
 
 ```bash
 python -m pip install -e .
@@ -42,7 +38,7 @@ taskc compile "Fix the checkout failure" \
   --context examples/single_agent/context.json --json
 ```
 
-Python API:
+Python API：
 
 ```python
 from taskc import CompilerConfig, TaskCompiler
@@ -61,13 +57,6 @@ result = compiler.compile(
 print(result.model_dump_json(indent=2))
 ```
 
-Candidate generation and field extraction are provider protocols. The default
-static providers are deterministic and offline; structured model providers can
-be injected without changing the contract, gap, clarification, or readiness
-logic.
+候选生成和字段提取均通过 Provider 协议完成。默认 Provider 具有确定性并支持离线运行；也可以注入结构化模型 Provider，而无需修改契约、信息缺口、澄清或就绪性判断逻辑。
 
-See [Concepts](docs/concepts.md),
-[Capability Contract 0.1](docs/capability-contract.md),
-[Result model](docs/result-model.md), and
-[MVP implementation decisions](docs/implementation-decisions.md) for the public
-behavior and extension boundaries.
+详细说明请参阅：[核心概念](docs/concepts.md)、[能力契约 0.1](docs/capability-contract.md)、[结果模型](docs/result-model.md) 和 [MVP 实现决策](docs/implementation-decisions.md)。
