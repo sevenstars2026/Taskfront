@@ -1,0 +1,5 @@
+{
+  "repository": "current_workspace",
+  "problem_description": "Checkout returns HTTP 500 after the payment step"
+}
+

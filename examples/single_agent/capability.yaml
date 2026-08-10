@@ -1,0 +1,29 @@
+schema_version: "0.1"
+id: repository.fix_bug
+version: 1.0.0
+description: Diagnose and fix a reproducible repository defect.
+examples:
+  - Fix the checkout failure.
+  - Repair this failing test.
+negative_examples:
+  - Improve repository build speed.
+required_inputs:
+  repository:
+    type: string
+    description: Repository or workspace to inspect.
+    must_be_explicit: true
+  problem_description:
+    type: string
+    description: Observed failure or incorrect behavior.
+optional_inputs:
+  reproduction_steps:
+    type: array
+    items: string
+    description: Steps that reproduce the problem.
+  expected_behavior:
+    type: string
+    description: Expected behavior after the fix.
+deliverables:
+  - code_patch
+  - verification_report
+

@@ -1,0 +1,21 @@
+schema_version: "0.1"
+id: repository.optimize_build
+version: 1.0.0
+description: Improve repository build speed.
+examples: [Make build faster, Reduce CI compile time]
+negative_examples: [Improve runtime performance]
+required_inputs:
+  repository: {type: string, description: Repository}
+  optimization_goal:
+    type: enum
+    description: Build stage
+    enum: [local_build, ci_build, both]
+optional_inputs:
+  ci_provider: {type: string, description: CI provider}
+  target_duration_seconds: {type: integer, description: Target duration}
+  measurement_enabled: {type: boolean, description: Measure before and after, default: true}
+conditional_requirements:
+  - when: {field: optimization_goal, in: [ci_build, both]}
+    require: [ci_provider]
+deliverables: [optimization_plan, code_changes, measurement]
+

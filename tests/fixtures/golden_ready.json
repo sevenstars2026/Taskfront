@@ -1,0 +1,74 @@
+{
+  "schema_version": "0.1",
+  "status": "ready",
+  "candidates": [
+    {
+      "capability_id": "repository.fix_bug",
+      "capability_version": "1.0.0",
+      "score": 1.0,
+      "match_reasons": ["Only capability available in the catalog."],
+      "inputs": {
+        "problem_description": {
+          "value": "Checkout fails",
+          "source": "application_context",
+          "source_ref": "context:problem_description",
+          "confidence": 1.0
+        },
+        "repository": {
+          "value": "current",
+          "source": "application_context",
+          "source_ref": "context:repository",
+          "confidence": 1.0
+        }
+      },
+      "unresolved_terms": []
+    }
+  ],
+  "selected_candidate": {
+    "capability_id": "repository.fix_bug",
+    "capability_version": "1.0.0",
+    "score": 1.0,
+    "match_reasons": ["Only capability available in the catalog."],
+    "inputs": {
+      "problem_description": {
+        "value": "Checkout fails",
+        "source": "application_context",
+        "source_ref": "context:problem_description",
+        "confidence": 1.0
+      },
+      "repository": {
+        "value": "current",
+        "source": "application_context",
+        "source_ref": "context:repository",
+        "confidence": 1.0
+      }
+    },
+    "unresolved_terms": []
+  },
+  "gaps": [],
+  "questions": [],
+  "intent": {
+    "schema_version": "0.1",
+    "intent_id": "fixed-id",
+    "capability_id": "repository.fix_bug",
+    "capability_version": "1.0.0",
+    "inputs": {
+      "problem_description": {
+        "value": "Checkout fails",
+        "source": "application_context",
+        "source_ref": "context:problem_description",
+        "confidence": 1.0
+      },
+      "repository": {
+        "value": "current",
+        "source": "application_context",
+        "source_ref": "context:repository",
+        "confidence": 1.0
+      }
+    },
+    "deliverables": ["code_patch", "verification_report"],
+    "compiled_at": "2026-01-01T00:00:00Z"
+  },
+  "diagnostics": []
+}
+

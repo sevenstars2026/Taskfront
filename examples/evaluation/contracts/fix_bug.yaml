@@ -1,0 +1,13 @@
+schema_version: "0.1"
+id: repository.fix_bug
+version: 1.0.0
+description: Diagnose and fix a repository bug.
+examples: [Fix checkout, Repair a failing test]
+negative_examples: [Improve build speed]
+required_inputs:
+  repository: {type: string, description: Repository, must_be_explicit: true}
+  problem_description: {type: string, description: Observed problem}
+optional_inputs:
+  reproduction_steps: {type: array, items: string, description: Reproduction steps}
+deliverables: [code_patch, verification_report]
+
