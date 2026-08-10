@@ -38,6 +38,58 @@ taskc compile "Fix the checkout failure" \
   --context examples/single_agent/context.json --json
 ```
 
+## 使用说明
+
+### 1. 校验能力契约
+
+能力契约描述 Agent 能做什么、需要哪些输入以及适用的约束。编译前可以先校验一个或多个契约文件：
+
+```bash
+taskc contract validate examples/single_agent/capability.yaml
+```
+
+校验成功后会输出已加载的契约数量；如果文件格式、字段类型或契约约束不合法，命令会返回错误信息和非零退出码。
+
+### 2. 编译任务请求
+
+使用 `compile` 将自然语言请求与能力契约进行匹配：
+
+```bash
+taskc compile "修复结账失败" \
+  --contracts examples/single_agent/capability.yaml \
+  --context examples/single_agent/context.json
+```
+
+其中：
+
+- `request` 是待编译的自然语言任务请求；
+- `--contracts` 指定一个或多个 YAML/JSON 能力契约文件；
+- `--context` 指定额外上下文 JSON 文件，可省略；
+- `--json` 以机器可读的 JSON 格式输出结果；
+- `--session-out` 将本次编译会话保存到 JSON 文件，便于后续澄清。
+
+### 3. 处理澄清问题
+
+当请求缺少必要信息时，结果会包含澄清问题和会话 ID。可以先保存会话：
+
+```bash
+taskc compile "修复结账失败" \
+  --contracts examples/single_agent/capability.yaml \
+  --session-out session.json --json
+```
+
+根据输出的问题准备答案后，使用 `continue` 继续编译：
+
+```bash
+taskc continue session.json \
+  --contracts examples/single_agent/capability.yaml \
+  --answer repository=current_workspace \
+  --answer problem_description="结账接口返回 HTTP 500" \
+  --json
+```
+
+最终结果可能为 `ready`、`needs_clarification` 或带有诊断信息的其他状态。`ready` 只表示输入已满足调度就绪性要求，不会触发任何 Agent 或工具执行。
+
 Python API：
 
 ```python
