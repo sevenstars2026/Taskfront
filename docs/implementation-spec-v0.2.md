@@ -1,9 +1,13 @@
 # TaskFront / Agent Task Compiler 实现规范 v0.2
 
-> 文档状态：Draft 0.2  
-> 目标发行版：`agent-task-compiler 0.2.0`  
-> 契约与结果 Schema：`0.2`  
-> 最低运行版本：Python 3.11  
+> 文档状态：Draft 0.2
+>
+> 目标发行版：`agent-task-compiler 0.2.0`
+>
+> 契约与结果 Schema：`0.2`
+>
+> 最低运行版本：Python 3.11
+>
 > 文档编码：UTF-8，无 BOM 亦可；所有平台必须按 UTF-8 读取
 
 ## 1. 规范约定
