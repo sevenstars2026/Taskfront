@@ -1,0 +1,124 @@
+{
+  "$defs": {
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "answer_script": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Answer Script",
+      "type": "array"
+    },
+    "context": {
+      "additionalProperties": {
+        "$ref": "#/$defs/JsonValue"
+      },
+      "title": "Context",
+      "type": "object"
+    },
+    "expected_capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Expected Capabilities",
+      "type": "array"
+    },
+    "expected_error_category": {
+      "anyOf": [
+        {
+          "enum": [
+            "invalid_contract",
+            "invalid_input",
+            "provider_failure",
+            "budget_exceeded",
+            "stale_session",
+            "internal_error"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expected Error Category"
+    },
+    "expected_status": {
+      "enum": [
+        "ready",
+        "needs_clarification",
+        "ambiguous",
+        "conflicting",
+        "unsupported"
+      ],
+      "title": "Expected Status",
+      "type": "string"
+    },
+    "forbid_ready": {
+      "default": false,
+      "title": "Forbid Ready",
+      "type": "boolean"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "request": {
+      "title": "Request",
+      "type": "string"
+    },
+    "required_gap_targets": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Gap Targets",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "0.2",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "request",
+    "expected_status"
+  ],
+  "title": "EvaluationScenario",
+  "type": "object"
+}

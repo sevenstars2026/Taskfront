@@ -1,9 +1,15 @@
-schema_version: "0.1"
+schema_version: "0.2"
 id: repository.optimize_performance
 version: 1.0.0
 description: Improve repository runtime performance.
-examples: [Improve API runtime performance, Reduce application latency]
-negative_examples: [Make the build faster]
+examples: [Improve API runtime performance, Reduce application latency, 降低 API 运行时延迟]
+negative_examples:
+  - Fix checkout
+  - Repair a failing test
+  - Diagnose repository defect
+  - Make build faster
+  - Reduce CI compile time
+  - Improve build speed
 required_inputs:
   repository: {type: string, description: Repository}
   performance_target:
@@ -11,4 +17,3 @@ required_inputs:
     description: Runtime area to optimize
     enum: [api_latency, throughput, memory]
 deliverables: [performance_plan, code_changes, measurement]
-

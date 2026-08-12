@@ -8,7 +8,7 @@ def test_telemetry_records_stages_without_user_text(fix_bug_contract: dict) -> N
     recorder = InMemoryTelemetryRecorder()
     compiler = TaskCompiler.from_contracts([fix_bug_contract], telemetry=recorder)
     compiler.compile(
-        "private failure details",
+        "Fix private failure details",
         {"repository": "current", "problem_description": "private failure details"},
     )
     names = [event.name for event in recorder.events]
@@ -16,4 +16,3 @@ def test_telemetry_records_stages_without_user_text(fix_bug_contract: dict) -> N
     assert names[-1] == "compilation.ready"
     serialized = "".join(event.model_dump_json() for event in recorder.events)
     assert "private failure details" not in serialized
-

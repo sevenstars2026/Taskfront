@@ -1,0 +1,445 @@
+{
+  "$defs": {
+    "ConditionExpression": {
+      "additionalProperties": false,
+      "properties": {
+        "all": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ConditionExpression"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "All"
+        },
+        "any": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/ConditionExpression"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Any"
+        },
+        "equals": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "exists": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exists"
+        },
+        "field": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field"
+        },
+        "in": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "In"
+        },
+        "not_equals": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "ConditionExpression",
+      "type": "object"
+    },
+    "ConditionalRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "require": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Require",
+          "type": "array"
+        },
+        "when": {
+          "$ref": "#/$defs/ConditionExpression"
+        }
+      },
+      "required": [
+        "when",
+        "require"
+      ],
+      "title": "ConditionalRequirement",
+      "type": "object"
+    },
+    "ConstraintSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "assert": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConditionExpression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "blocking": {
+          "default": true,
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "evaluator": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evaluator"
+        },
+        "evaluator_options": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Evaluator Options",
+          "type": "object"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "targets": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Targets",
+          "type": "array"
+        },
+        "when": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConditionExpression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "code",
+        "targets",
+        "message"
+      ],
+      "title": "ConstraintSpec",
+      "type": "object"
+    },
+    "InputSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "classification": {
+          "default": "public",
+          "enum": [
+            "public",
+            "sensitive",
+            "secret"
+          ],
+          "title": "Classification",
+          "type": "string"
+        },
+        "default": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "enum": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enum"
+        },
+        "enum_aliases": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Enum Aliases",
+          "type": "object"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "enum": [
+                "string",
+                "integer",
+                "number",
+                "boolean",
+                "object"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Items"
+        },
+        "question_template": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question Template"
+        },
+        "source_policy": {
+          "default": "any",
+          "enum": [
+            "any",
+            "trusted",
+            "user_confirmed"
+          ],
+          "title": "Source Policy",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "string",
+            "integer",
+            "number",
+            "boolean",
+            "array",
+            "object",
+            "enum"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "value_schema": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Schema"
+        }
+      },
+      "required": [
+        "type",
+        "description"
+      ],
+      "title": "InputSpec",
+      "type": "object"
+    },
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "conditional_requirements": {
+      "items": {
+        "$ref": "#/$defs/ConditionalRequirement"
+      },
+      "title": "Conditional Requirements",
+      "type": "array"
+    },
+    "constraints": {
+      "items": {
+        "$ref": "#/$defs/ConstraintSpec"
+      },
+      "title": "Constraints",
+      "type": "array"
+    },
+    "deliverables": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Deliverables",
+      "type": "array"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "examples": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Examples",
+      "type": "array"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "negative_examples": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Negative Examples",
+      "type": "array"
+    },
+    "optional_inputs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/InputSpec"
+      },
+      "title": "Optional Inputs",
+      "type": "object"
+    },
+    "question_ranker": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Question Ranker"
+    },
+    "required_inputs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/InputSpec"
+      },
+      "title": "Required Inputs",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "0.2",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "version",
+    "description",
+    "required_inputs",
+    "deliverables"
+  ],
+  "title": "CapabilityContract",
+  "type": "object"
+}

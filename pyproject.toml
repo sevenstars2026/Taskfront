@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agent-task-compiler"
-version = "0.1.0"
+version = "0.2.0"
 description = "Compile ambiguous natural-language requests into validated, dispatch-ready agent intents."
 readme = "README.md"
 requires-python = ">=3.11"

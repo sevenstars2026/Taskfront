@@ -5,25 +5,29 @@ from taskc.config import CompilerConfig
 from taskc.models import CandidateDraft, CapabilityContract, ExtractionResult, SourcedValue
 
 
+def _draft(contract: CapabilityContract) -> CandidateDraft:
+    return CandidateDraft(
+        capability_id=contract.id,
+        capability_version=contract.version,
+        score=1.0,
+        evidence=[{"code": "MATCH-TEST", "summary": "test", "strength": 1.0}],
+    )
+
+
 def test_source_priority_prefers_user_over_context(fix_bug_contract: dict) -> None:
     contract = CapabilityContract.model_validate(fix_bug_contract)
     extraction = ExtractionResult(
         values={
             "repository": [
                 SourcedValue(value="context", source="application_context"),
-                SourcedValue(value="user", source="user"),
+                SourcedValue(value="user", source="user_request"),
             ],
-            "problem_description": [SourcedValue(value="broken", source="user")],
+            "problem_description": [SourcedValue(value="broken", source="user_request")],
         }
     )
     analysis = analyze_candidate(
         contract,
-        CandidateDraft(
-            capability_id=contract.id,
-            capability_version=contract.version,
-            score=1,
-            match_reasons=["test"],
-        ),
+        _draft(contract),
         extraction,
         CompilerConfig(),
     )
@@ -35,7 +39,7 @@ def test_equal_priority_values_create_conflict(fix_bug_contract: dict) -> None:
     contract = CapabilityContract.model_validate(fix_bug_contract)
     extraction = ExtractionResult(
         values={
-            "repository": [SourcedValue(value="repo", source="user")],
+            "repository": [SourcedValue(value="repo", source="user_request")],
             "problem_description": [
                 SourcedValue(value="first", source="clarification_answer"),
                 SourcedValue(value="second", source="clarification_answer"),
@@ -44,7 +48,7 @@ def test_equal_priority_values_create_conflict(fix_bug_contract: dict) -> None:
     )
     analysis = analyze_candidate(
         contract,
-        CandidateDraft(capability_id=contract.id, score=1, match_reasons=["test"]),
+        _draft(contract),
         extraction,
         CompilerConfig(),
     )
@@ -55,6 +59,7 @@ def test_equal_priority_values_create_conflict(fix_bug_contract: dict) -> None:
 def test_string_to_integer_is_not_coerced_by_default() -> None:
     contract = CapabilityContract.model_validate(
         {
+            "schema_version": "0.2",
             "id": "example.count",
             "version": "1.0.0",
             "description": "Count example.",
@@ -64,8 +69,8 @@ def test_string_to_integer_is_not_coerced_by_default() -> None:
     )
     analysis = analyze_candidate(
         contract,
-        CandidateDraft(capability_id=contract.id, score=1, match_reasons=["test"]),
-        ExtractionResult(values={"count": [SourcedValue(value="7", source="user")]}),
+        _draft(contract),
+        ExtractionResult(values={"count": [SourcedValue(value="7", source="user_request")]}),
         CompilerConfig(),
     )
     assert any(gap.code == "GAP-UNVERIFIABLE-TYPE" for gap in analysis.gaps)
@@ -75,7 +80,7 @@ def test_model_inference_cannot_satisfy_explicit_field(fix_bug_contract: dict) -
     contract = CapabilityContract.model_validate(fix_bug_contract)
     analysis = analyze_candidate(
         contract,
-        CandidateDraft(capability_id=contract.id, score=1, match_reasons=["test"]),
+        _draft(contract),
         ExtractionResult(
             values={
                 "repository": [SourcedValue(value="guessed", source="model_inference")],
@@ -84,5 +89,4 @@ def test_model_inference_cannot_satisfy_explicit_field(fix_bug_contract: dict) -
         ),
         CompilerConfig(),
     )
-    assert any(gap.code == "GAP-UNVERIFIABLE-EXPLICIT" for gap in analysis.gaps)
-
+    assert any(gap.code == "GAP-UNVERIFIABLE-SOURCE" for gap in analysis.gaps)

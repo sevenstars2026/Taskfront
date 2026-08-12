@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import pytest
+
 from taskc import CompilerConfig, TaskCompiler
-from taskc.providers import ModelExtractionProvider
+from taskc.models import InvalidInputError
+from taskc.providers import ModelInterpretationProvider
 
 
 class _InferenceOnlyModel:
@@ -10,12 +13,41 @@ class _InferenceOnlyModel:
 
     async def generate_json(self, **kwargs):
         return {
-            "inputs": {
-                "repository": {"value": "guessed", "source": "model_inference"},
-                "problem_description": {"value": "guessed failure", "source": "model_inference"},
-            },
-            "unresolved_terms": [],
+            "candidates": [{
+                "capability_id": "repository.fix_bug",
+                "capability_version": "1.0.0",
+                "score": 1.0,
+                "evidence": [{"code": "MATCH-MODEL", "summary": "Model match", "strength": 1.0}],
+                "inputs": {
+                    "repository": {"value": "guessed", "source": "model_inference"},
+                    "problem_description": {"value": "guessed failure", "source": "model_inference"},
+                },
+            }]
         }
+
+
+class _CalibratedProvider:
+    provider_id = "calibrated-test"
+    config_version = "test"
+    score_semantics = "calibrated"
+
+    async def interpret(self, request, catalog, *, max_candidates, budget):
+        from taskc.models import CandidateDraft, MatchEvidence
+
+        return [
+            CandidateDraft(
+                capability_id="repository.optimize_build",
+                capability_version="1.0.0",
+                score=0.99,
+                evidence=[MatchEvidence(code="MATCH-TEST", summary="Strong", strength=0.99)],
+            ),
+            CandidateDraft(
+                capability_id="repository.fix_bug",
+                capability_version="1.0.0",
+                score=0.1,
+                evidence=[MatchEvidence(code="MATCH-TEST", summary="Weak", strength=0.1)],
+            ),
+        ]
 
 
 def test_complete_single_capability_is_ready(fix_bug_contract: dict) -> None:
@@ -33,39 +65,38 @@ def test_missing_field_generates_minimal_question(fix_bug_contract: dict) -> Non
     compiler = TaskCompiler.from_contracts([fix_bug_contract])
     result = compiler.compile("Fix checkout", {"repository": "current"})
     assert result.status == "needs_clarification"
-    assert [question.id for question in result.questions] == ["q-problem-description"]
+    assert result.questions[0].targets == ["inputs.problem_description"]
 
 
 def test_continue_can_reach_ready(fix_bug_contract: dict) -> None:
     compiler = TaskCompiler.from_contracts([fix_bug_contract])
-    compiler.compile("Fix checkout", {"repository": "current"})
+    initial = compiler.compile("Fix checkout", {"repository": "current"})
+    question = initial.questions[0]
     result = compiler.continue_(
         compiler.last_session_id,
-        [{"question_id": "q-problem-description", "value": "Checkout returns 500"}],
+        0,
+        [{
+            "question_id": question.id,
+            "result_id": question.result_id,
+            "revision": question.revision,
+            "value": "Checkout returns 500",
+        }],
     )
     assert result.status == "ready"
 
 
-def test_two_answers_to_same_question_create_conflict(fix_bug_contract: dict) -> None:
+def test_two_answers_to_same_question_are_invalid_input(fix_bug_contract: dict) -> None:
     compiler = TaskCompiler.from_contracts([fix_bug_contract])
-    compiler.compile("Fix checkout", {"repository": "current"})
-    result = compiler.continue_(
-        compiler.last_session_id,
-        [
-            {"question_id": "q-problem-description", "value": "First"},
-            {"question_id": "q-problem-description", "value": "Second"},
-        ],
-    )
-    assert result.status == "conflicting"
-    assert result.gaps[0].kind == "conflicting"
-
-    resolved = compiler.continue_(
-        compiler.last_session_id,
-        [{"question_id": "q-problem-description", "value": "First"}],
-    )
-    assert resolved.status == "ready"
-    assert resolved.intent.inputs["problem_description"].value == "First"
-    assert len(compiler.get_session().answers) == 3
+    initial = compiler.compile("Fix checkout", {"repository": "current"})
+    question = initial.questions[0]
+    answer = {
+        "question_id": question.id,
+        "result_id": question.result_id,
+        "revision": question.revision,
+        "value": "First",
+    }
+    with pytest.raises(InvalidInputError):
+        compiler.continue_(compiler.last_session_id, 0, [answer, {**answer, "value": "Second"}])
 
 
 def test_conditional_requirement_is_computed(build_contract: dict) -> None:
@@ -76,37 +107,44 @@ def test_conditional_requirement_is_computed(build_contract: dict) -> None:
     )
     assert result.status == "needs_clarification"
     assert any(gap.code == "GAP-MISSING-CONDITIONAL" for gap in result.gaps)
-    assert result.questions[0].id == "q-ci-provider"
+    assert result.questions[0].targets == ["inputs.ci_provider"]
 
 
-def test_explicit_default_is_applied(build_contract: dict) -> None:
+def test_contract_default_is_applied(build_contract: dict) -> None:
     compiler = TaskCompiler.from_contracts([build_contract])
     result = compiler.compile(
         "Make build faster",
         {"repository": "current", "optimization_goal": "local_build"},
     )
     assert result.status == "ready"
-    assert result.intent.inputs["measure"].source == "explicit_default"
+    assert result.intent.inputs["measure"].source == "contract_default"
 
 
 def test_multiple_candidates_are_not_silently_selected(
     fix_bug_contract: dict, build_contract: dict
 ) -> None:
     compiler = TaskCompiler.from_contracts([fix_bug_contract, build_contract])
-    result = compiler.compile("Fix and improve repository build", {"repository": "current"})
+    result = compiler.compile("Make build faster and fix checkout", {"repository": "current"})
     assert result.status == "ambiguous"
     assert len(result.candidates) == 2
-    assert result.questions[0].id == "q-capability"
+    assert result.questions[0].targets == ["capability"]
 
 
 def test_capability_clarification_selects_candidate(
     fix_bug_contract: dict, build_contract: dict
 ) -> None:
     compiler = TaskCompiler.from_contracts([fix_bug_contract, build_contract])
-    compiler.compile("Fix and improve repository build", {"repository": "current"})
+    initial = compiler.compile("Make build faster and fix checkout", {"repository": "current"})
+    question = initial.questions[0]
     result = compiler.continue_(
         compiler.last_session_id,
-        [{"question_id": "q-capability", "value": "repository.optimize_build"}],
+        0,
+        [{
+            "question_id": question.id,
+            "result_id": question.result_id,
+            "revision": question.revision,
+            "value": "repository.optimize_build@1.0.0",
+        }],
     )
     assert result.status == "needs_clarification"
     assert result.selected_candidate.capability_id == "repository.optimize_build"
@@ -128,6 +166,7 @@ def test_auto_selection_requires_explicit_configuration(
             auto_select_threshold=0.01,
             auto_select_margin=0,
         ),
+        interpretation_provider=_CalibratedProvider(),
     )
     result = compiler.compile(
         "Make the build faster",
@@ -140,8 +179,8 @@ def test_auto_selection_requires_explicit_configuration(
 def test_model_guess_does_not_satisfy_explicit_input(fix_bug_contract: dict) -> None:
     compiler = TaskCompiler.from_contracts(
         [fix_bug_contract],
-        extraction_provider=ModelExtractionProvider(_InferenceOnlyModel()),
+        interpretation_provider=ModelInterpretationProvider(_InferenceOnlyModel()),
     )
     result = compiler.compile("Fix checkout")
     assert result.status == "needs_clarification"
-    assert any(gap.code == "GAP-UNVERIFIABLE-EXPLICIT" for gap in result.gaps)
+    assert any(gap.code == "GAP-UNVERIFIABLE-SOURCE" for gap in result.gaps)

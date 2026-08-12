@@ -23,7 +23,7 @@ def workspace_tmp() -> Path:
 @pytest.fixture
 def fix_bug_contract() -> dict:
     return {
-        "schema_version": "0.1",
+        "schema_version": "0.2",
         "id": "repository.fix_bug",
         "version": "1.0.0",
         "description": "Diagnose and fix a reproducible repository defect.",
@@ -33,7 +33,7 @@ def fix_bug_contract() -> dict:
             "repository": {
                 "type": "string",
                 "description": "Repository or workspace.",
-                "must_be_explicit": True,
+                "source_policy": "trusted",
             },
             "problem_description": {
                 "type": "string",
@@ -54,7 +54,7 @@ def fix_bug_contract() -> dict:
 @pytest.fixture
 def build_contract() -> dict:
     return {
-        "schema_version": "0.1",
+        "schema_version": "0.2",
         "id": "repository.optimize_build",
         "version": "1.0.0",
         "description": "Improve repository build speed.",

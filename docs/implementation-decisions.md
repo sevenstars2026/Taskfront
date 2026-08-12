@@ -1,33 +1,12 @@
-# MVP implementation decisions
+# 0.2 实现决策
 
-The 0.1 product and implementation specifications intentionally leave several
-host-policy choices open. This implementation uses the following conservative
-defaults:
-
-- Source precedence is `clarification_answer`, `user`, `application_context`,
-  `explicit_default`, then `model_inference`. Different values at the same
-  effective precedence become a blocking conflict.
-- A direct answer to a surfaced conflict explicitly resolves the current value;
-  superseded answers remain in `CompilationSession.answers` for provenance.
-- Strings are not converted to numbers unless
-  `CompilerConfig.allow_string_to_number` is enabled. Enum matching is exact.
-- Multiple plausible capabilities return `ambiguous`. Score-based automatic
-  selection is disabled unless the host opts in and configures both a threshold
-  and a margin.
-- Any blocking conflict yields `conflicting`; other blocking field gaps yield
-  `needs_clarification`. No valid candidate yields `unsupported`.
-- Clarification answers count as explicit input for `must_be_explicit` fields.
-- The static provider is an offline lexical baseline. Model-backed candidate and
-  extraction providers are optional and their outputs pass through strict
-  Pydantic validation before deterministic analysis.
-- Model responses may be retried once by default. An in-memory raw-response
-  cache wrapper is available, but readiness and gap calculations are always
-  recomputed.
-- Compilation automatically creates an in-memory session. The latest ID is
-  available as `TaskCompiler.last_session_id`; the CLI can persist the session
-  with `--session-out` and resume it with `taskc continue`.
-- If a catalog digest changes, continuation recompiles against the current
-  catalog and emits `E-CONTRACT-CATALOG-CHANGED`.
-- Constraint entries use `{code, assert, message, blocking}` where `assert`
-  contains the same finite condition language used by conditional requirements.
-
+- 默认使用离线静态 Provider。它要求正向词法证据，并以相对分数过滤明显弱候选，防止“单能力目录 + 完整上下文”误判为 `ready`。
+- 静态分数声明为 uncalibrated，不能用于自动能力选择。只有 calibrated Provider 且宿主显式启用阈值与 margin 时才允许自动选择。
+- 字符串默认不转换为数字；`allow_string_to_number` 是显式兼容开关。Enum alias 在 Unicode NFC 后精确、区分大小写匹配。
+- 条件使用三值逻辑。constraint assertion 为 unknown 时延迟，不生成虚假失败；blocking constraint 的 target 必须能映射为问题。
+- Provider 默认预算为 2 次逻辑模型调用、3 次网络尝试、60 秒和 2 MB 响应。重试消耗网络预算，错误与领域 `unsupported` 分离。
+- Session revision 使用 compare-and-swap。回答必须引用当前 `question_id`、`result_id` 和 revision；同批重复问题是 `invalid_input`。
+- 目录变化仅在无关能力变化或 selected contract 只新增 optional 字段时兼容继续；精确版本消失或 required/type/source policy/enum/条件/约束变化会返回 `stale_session`。
+- 公共输出遮蔽 sensitive 字面值和 secret 引用。默认 JSON Session Store 拒绝 sensitive 字面值，而不是写入不可恢复的伪会话。
+- 扩展只能由宿主显式注册。未注册或默认未获许可的非确定性扩展在编译器构造阶段 fail closed。
+- 0.1 和 0.2 不静默互转；使用 `taskc contract migrate` 生成迁移文件和诊断报告。

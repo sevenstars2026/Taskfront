@@ -7,7 +7,7 @@
   {"id":"S06","name":"complete CI build","request":"Make CI build faster","context":{"repository":"current","optimization_goal":"ci_build","ci_provider":"GitHub Actions"},"catalog":"optimize_build","expected_status":"ready"},
   {"id":"S07","name":"both build modes require CI","request":"Make all builds faster","context":{"repository":"current","optimization_goal":"both"},"catalog":"optimize_build","expected_status":"needs_clarification"},
   {"id":"S08","name":"invalid enum","request":"Make build faster","context":{"repository":"current","optimization_goal":"nightly"},"catalog":"optimize_build","expected_status":"needs_clarification"},
-  {"id":"S09","name":"ambiguous optimization","request":"Improve repository build and runtime performance","context":{"repository":"current"},"catalog":"multi","expected_status":"ambiguous"},
+  {"id":"S09","name":"ambiguous optimization","request":"Make build faster and improve API runtime performance","context":{"repository":"current"},"catalog":"multi","expected_status":"ambiguous"},
   {"id":"S10","name":"unsupported translation","request":"Translate a legal document into French","context":{},"catalog":"multi","expected_status":"unsupported"},
   {"id":"S11","name":"performance complete","request":"Improve API runtime performance","context":{"repository":"current","performance_target":"api_latency"},"catalog":"performance","expected_status":"ready"},
   {"id":"S12","name":"performance target missing","request":"Improve runtime performance","context":{"repository":"current"},"catalog":"performance","expected_status":"needs_clarification"},
@@ -22,4 +22,3 @@
   {"id":"S21","name":"build default measurement","request":"Make build faster","context":{"repository":"current","optimization_goal":"local_build"},"catalog":"optimize_build","expected_status":"ready"},
   {"id":"S22","name":"unrelated multi catalog","request":"Book a restaurant for tonight","context":{},"catalog":"multi","expected_status":"unsupported"}
 ]
-

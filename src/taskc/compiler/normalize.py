@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import unicodedata
 import math
+import unicodedata
 from typing import Any
 
 from taskc.config import CompilerConfig
-from taskc.models import InvalidInputError, NormalizedRequest, SourcedValue
+from taskc.models import CapabilityRef, Diagnostic, InvalidInputError, NormalizedRequest, SourcedValue
 from taskc.models.common import JsonValue
-from taskc.models.diagnostics import Diagnostic
 
 
 def _validate_json_value(
@@ -42,8 +41,8 @@ def _validate_json_value(
     if isinstance(value, dict):
         if len(value) > max_collection_length:
             raise ValueError("JSON object exceeds the configured field limit")
-        if not all(isinstance(key, str) for key in value):
-            raise ValueError("JSON object keys must be strings")
+        if not all(isinstance(key, str) and len(key) <= 128 for key in value):
+            raise ValueError("JSON object keys must be strings of at most 128 characters")
         return {
             key: _validate_json_value(
                 item,
@@ -56,71 +55,73 @@ def _validate_json_value(
     raise ValueError(f"unsupported context value type: {type(value).__name__}")
 
 
+def _input_error(code: str, message: str) -> InvalidInputError:
+    return InvalidInputError(
+        message,
+        [Diagnostic(code=code, severity="error", phase="normalization", message=message)],
+    )
+
+
 def normalize_request(
     request: str,
     context: dict[str, Any] | None,
     config: CompilerConfig,
+    requested_capability: CapabilityRef | dict[str, str] | None = None,
 ) -> NormalizedRequest:
     if not isinstance(request, str):
-        raise InvalidInputError(
-            "Request must be a string.",
-            [Diagnostic(code="E-INPUT-001", severity="error", message="Request must be a string.")],
-        )
+        raise _input_error("E-INPUT-001", "Request must be a string.")
+    if len(request) > config.max_request_length:
+        raise _input_error("E-INPUT-003", "Request exceeds the configured length limit.")
     normalized = unicodedata.normalize("NFC", request).strip()
     if not normalized:
-        raise InvalidInputError(
-            "Request must not be blank.",
-            [Diagnostic(code="E-INPUT-002", severity="error", message="Request must not be blank.")],
-        )
+        raise _input_error("E-INPUT-002", "Request must not be blank.")
     if len(normalized) > config.max_request_length:
-        raise InvalidInputError(
-            "Request exceeds the configured length limit.",
-            [
-                Diagnostic(
-                    code="E-INPUT-003",
-                    severity="error",
-                    message="Request exceeds the configured length limit.",
-                )
-            ],
-        )
+        raise _input_error("E-INPUT-003", "Request exceeds the configured length limit.")
     context = context or {}
     if not isinstance(context, dict) or len(context) > config.max_context_fields:
-        raise InvalidInputError(
-            "Context must be an object within the configured field limit.",
-            [
-                Diagnostic(
-                    code="E-INPUT-004",
-                    severity="error",
-                    message="Context must be an object within the configured field limit.",
-                )
-            ],
+        raise _input_error(
+            "E-INPUT-004", "Context must be an object within the configured field limit."
         )
     try:
-        sourced_context = {
-            field_name: SourcedValue(
-                value=_validate_json_value(
-                    value,
-                    max_collection_length=config.max_collection_length,
-                    max_string_length=config.max_request_length,
-                ),
-                source="application_context",
-                source_ref=f"context:{field_name}",
-                confidence=1.0,
-            )
-            for field_name, value in sorted(context.items())
-        }
-    except (TypeError, ValueError) as exc:
-        raise InvalidInputError(
-            "Context contains a non-JSON or unsafe value.",
-            [
-                Diagnostic(
-                    code="E-INPUT-005",
-                    severity="error",
-                    message="Context contains a non-JSON or unsafe value.",
+        sourced_context: dict[str, SourcedValue] = {}
+        for field_name, value in sorted(context.items()):
+            if not isinstance(field_name, str) or len(field_name) > 128:
+                raise ValueError("context keys must be strings of at most 128 characters")
+            if isinstance(value, dict) and set(value) == {"value_ref"} and isinstance(value["value_ref"], str):
+                sourced_context[field_name] = SourcedValue(
+                    value_ref=value["value_ref"],
+                    source="application_context",
+                    source_ref=f"context:{field_name}",
+                    confidence=1.0,
+                    classification="secret",
                 )
-            ],
-        ) from exc
-    return NormalizedRequest(raw_text=request, text=normalized, context=sourced_context)
+            else:
+                sourced_context[field_name] = SourcedValue(
+                    value=_validate_json_value(
+                        value,
+                        max_collection_length=config.max_collection_length,
+                        max_string_length=config.max_request_length,
+                    ),
+                    source="application_context",
+                    source_ref=f"context:{field_name}",
+                    confidence=1.0,
+                )
+    except (TypeError, ValueError) as exc:
+        raise _input_error("E-INPUT-005", "Context contains a non-JSON or unsafe value.") from exc
+    try:
+        parsed_capability = (
+            requested_capability
+            if isinstance(requested_capability, CapabilityRef) or requested_capability is None
+            else CapabilityRef.model_validate(requested_capability)
+        )
+    except ValueError as exc:
+        raise _input_error("E-INPUT-CAPABILITY-REF", "Requested capability reference is invalid.") from exc
+    return NormalizedRequest(
+        raw_text=request,
+        text=normalized,
+        context=sourced_context,
+        requested_capability=parsed_capability,
+    )
 
 
 __all__ = ["normalize_request"]

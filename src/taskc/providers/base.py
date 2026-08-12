@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
+from taskc.budget import ProviderBudget
 from taskc.contracts import CapabilityCatalog
 from taskc.models import CandidateDraft, CapabilityContract, ExtractionResult, NormalizedRequest
 from taskc.models.common import JsonObject
@@ -32,7 +33,22 @@ class ExtractionProvider(Protocol):
 
 
 class QuestionRenderer(Protocol):
-    async def render(self, *, text: str, field_path: str, sensitive: bool) -> str: ...
+    async def render(self, *, text: str, field_path: str, classification: str) -> str: ...
+
+
+class InterpretationProvider(Protocol):
+    provider_id: str
+    config_version: str
+    score_semantics: str
+
+    async def interpret(
+        self,
+        request: NormalizedRequest,
+        catalog: CapabilityCatalog,
+        *,
+        max_candidates: int,
+        budget: ProviderBudget,
+    ) -> list[CandidateDraft]: ...
 
 
 class StructuredModelProvider(Protocol):
@@ -50,6 +66,6 @@ class StructuredModelProvider(Protocol):
 
 
 __all__ = [
-    "CandidateProvider", "ExtractionProvider", "QuestionRenderer", "StructuredModelProvider"
+    "CandidateProvider", "ExtractionProvider", "InterpretationProvider", "QuestionRenderer",
+    "StructuredModelProvider"
 ]
-

@@ -1,5 +1,4 @@
-from .json_adapter import result_to_json
+from .json_adapter import envelope_to_json, result_to_json
 from .json_session import JsonFileSessionStore
 
-__all__ = ["JsonFileSessionStore", "result_to_json"]
-
+__all__ = ["JsonFileSessionStore", "envelope_to_json", "result_to_json"]

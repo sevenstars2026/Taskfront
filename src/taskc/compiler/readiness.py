@@ -8,8 +8,11 @@ from taskc.models import CandidateIntent, DispatchReadyIntent, Gap
 
 
 def is_ready(candidate: CandidateIntent, gaps: list[Gap], catalog: CapabilityCatalog) -> bool:
-    return catalog.contains(candidate.capability_id, candidate.capability_version) and not any(
-        gap.blocking for gap in gaps
+    return (
+        candidate.viability == "viable"
+        and catalog.contains(candidate.capability_id, candidate.capability_version)
+        and not any(gap.blocking for gap in gaps)
+        and not any(value.redacted for value in candidate.inputs.values())
     )
 
 
@@ -18,6 +21,8 @@ def build_intent(
     catalog: CapabilityCatalog,
     clock: Callable[[], datetime],
     id_generator: Callable[[], str],
+    *,
+    result_id: str,
 ) -> DispatchReadyIntent:
     contract = catalog.get(candidate.capability_id, candidate.capability_version)
     if contract is None:
@@ -26,9 +31,12 @@ def build_intent(
     if undeclared:
         raise ValueError("candidate contains undeclared fields")
     return DispatchReadyIntent(
+        schema_version="0.2",
         intent_id=id_generator(),
+        result_id=result_id,
         capability_id=contract.id,
         capability_version=contract.version,
+        catalog_digest=catalog.digest,
         inputs=candidate.inputs,
         deliverables=contract.deliverables,
         compiled_at=clock(),
@@ -36,4 +44,3 @@ def build_intent(
 
 
 __all__ = ["build_intent", "is_ready"]
-

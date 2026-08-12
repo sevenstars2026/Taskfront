@@ -1,13 +1,17 @@
-schema_version: "0.1"
+schema_version: "0.2"
 id: repository.fix_bug
 version: 1.0.0
 description: Diagnose and fix a repository bug.
-examples: [Fix checkout, Repair a failing test]
-negative_examples: [Improve build speed]
+examples: [Fix checkout, Repair a failing test, 修复结账故障]
+negative_examples:
+  - Make build faster
+  - Reduce CI compile time
+  - Improve API runtime performance
+  - Reduce application latency
+  - Improve repository runtime performance
 required_inputs:
-  repository: {type: string, description: Repository, must_be_explicit: true}
+  repository: {type: string, description: Repository, source_policy: trusted}
   problem_description: {type: string, description: Observed problem}
 optional_inputs:
   reproduction_steps: {type: array, items: string, description: Reproduction steps}
 deliverables: [code_patch, verification_report]
-

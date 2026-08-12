@@ -30,12 +30,11 @@ class InMemoryProviderCache:
 class CachedStructuredModelProvider:
     """Caches raw structured provider responses; deterministic analysis is never cached."""
 
-    config_version = "0.1"
-
     def __init__(self, provider: StructuredModelProvider, cache: ProviderCache):
         self.provider = provider
         self.cache = cache
         self.provider_id = f"cached:{provider.provider_id}"
+        self.config_version = f"0.2:{provider.config_version}"
 
     async def generate_json(
         self,
@@ -72,4 +71,3 @@ class CachedStructuredModelProvider:
 
 
 __all__ = ["CachedStructuredModelProvider", "InMemoryProviderCache", "ProviderCache"]
-

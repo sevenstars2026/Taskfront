@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
+import socket
 import urllib.error
+import urllib.parse
 import urllib.request
 from typing import Any
 
@@ -15,7 +18,7 @@ class OpenAICompatibleProvider:
     """Small optional Chat Completions adapter with no vendor SDK dependency."""
 
     provider_id = "openai-compatible"
-    config_version = "0.1"
+    prompt_template_version = "chat-completions-json-schema-v1"
 
     def __init__(
         self,
@@ -25,12 +28,34 @@ class OpenAICompatibleProvider:
         model: str,
         timeout_seconds: float = 30.0,
         max_response_bytes: int = 2_000_000,
+        allow_insecure_localhost: bool = False,
     ):
+        parsed = urllib.parse.urlparse(endpoint)
+        is_localhost = parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+        if parsed.scheme != "https" and not (
+            parsed.scheme == "http" and is_localhost and allow_insecure_localhost
+        ):
+            raise ValueError(
+                "endpoint must use HTTPS; localhost HTTP requires allow_insecure_localhost=True"
+            )
+        if not parsed.hostname:
+            raise ValueError("endpoint must be an absolute HTTP(S) URL")
         self.endpoint = endpoint
         self._api_key = api_key
         self.model = model
         self.timeout_seconds = timeout_seconds
         self.max_response_bytes = max_response_bytes
+        endpoint_fingerprint = hashlib.sha256(endpoint.encode("utf-8")).hexdigest()[:12]
+        self.config_version = (
+            f"0.2:model={model}:prompt={self.prompt_template_version}:"
+            f"endpoint={endpoint_fingerprint}:timeout={timeout_seconds}:bytes={max_response_bytes}"
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f"OpenAICompatibleProvider(endpoint={self.endpoint!r}, model={self.model!r}, "
+            f"config_version={self.config_version!r})"
+        )
 
     async def generate_json(
         self,
@@ -84,18 +109,24 @@ class OpenAICompatibleProvider:
             if not isinstance(result, dict):
                 raise ValueError("structured response is not an object")
             return result
-        except TimeoutError as exc:
+        except (TimeoutError, socket.timeout) as exc:
             code = "E-PROVIDER-TIMEOUT"
             failure = exc
+            retryable = True
+        except urllib.error.HTTPError as exc:
+            code = "E-PROVIDER-HTTP"
+            failure = exc
+            retryable = exc.code == 429 or 500 <= exc.code <= 599
         except (urllib.error.URLError, json.JSONDecodeError, KeyError, IndexError, ValueError) as exc:
             code = "E-PROVIDER-RESPONSE"
             failure = exc
+            retryable = isinstance(exc, urllib.error.URLError)
         diagnostic = Diagnostic(
             code=code,
             severity="error",
             message="Structured model provider request failed.",
         )
-        raise ProviderError(diagnostic.message, [diagnostic]) from failure
+        raise ProviderError(diagnostic.message, [diagnostic], retryable=retryable) from failure
 
 
 __all__ = ["OpenAICompatibleProvider"]

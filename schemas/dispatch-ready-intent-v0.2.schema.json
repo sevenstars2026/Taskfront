@@ -1,0 +1,245 @@
+{
+  "$defs": {
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "SourcedValue": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "value"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "value_ref"
+                    ]
+                  }
+                ]
+              },
+              "properties": {
+                "redacted": {
+                  "const": true
+                }
+              },
+              "required": [
+                "redacted"
+              ]
+            },
+            {
+              "not": {
+                "required": [
+                  "value_ref"
+                ]
+              },
+              "properties": {
+                "classification": {
+                  "not": {
+                    "const": "secret"
+                  }
+                },
+                "redacted": {
+                  "const": false
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            {
+              "not": {
+                "required": [
+                  "value"
+                ]
+              },
+              "properties": {
+                "redacted": {
+                  "const": false
+                }
+              },
+              "required": [
+                "value_ref"
+              ]
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "classification": {
+          "default": "public",
+          "enum": [
+            "public",
+            "sensitive",
+            "secret"
+          ],
+          "title": "Classification",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "redacted": {
+          "default": false,
+          "title": "Redacted",
+          "type": "boolean"
+        },
+        "source": {
+          "enum": [
+            "user_request",
+            "application_context",
+            "clarification_answer",
+            "contract_default",
+            "model_inference"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Ref"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Ref"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "SourcedValue",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "capability_id": {
+      "title": "Capability Id",
+      "type": "string"
+    },
+    "capability_version": {
+      "title": "Capability Version",
+      "type": "string"
+    },
+    "catalog_digest": {
+      "title": "Catalog Digest",
+      "type": "string"
+    },
+    "compiled_at": {
+      "format": "date-time",
+      "title": "Compiled At",
+      "type": "string"
+    },
+    "deliverables": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Deliverables",
+      "type": "array"
+    },
+    "inputs": {
+      "additionalProperties": {
+        "$ref": "#/$defs/SourcedValue"
+      },
+      "title": "Inputs",
+      "type": "object"
+    },
+    "intent_id": {
+      "title": "Intent Id",
+      "type": "string"
+    },
+    "result_id": {
+      "title": "Result Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "0.2",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "intent_id",
+    "result_id",
+    "capability_id",
+    "capability_version",
+    "catalog_digest",
+    "inputs",
+    "deliverables",
+    "compiled_at"
+  ],
+  "title": "DispatchReadyIntent",
+  "type": "object"
+}

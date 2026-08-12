@@ -1,74 +1,141 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
+  "result_id": "fixed-id",
+  "session_id": "fixed-id",
+  "revision": 0,
+  "catalog_digest": "3208ac7ea470d58b6541e49d0b41ead57d307aee9fc746ed56d91d0771a56429",
+  "reproducible": true,
   "status": "ready",
   "candidates": [
     {
       "capability_id": "repository.fix_bug",
       "capability_version": "1.0.0",
-      "score": 1.0,
-      "match_reasons": ["Only capability available in the catalog."],
+      "score": 0.666667,
+      "evidence": [
+        {
+          "code": "MATCH-STATIC-JACCARD",
+          "summary": "Deterministic lexical match against contract text.",
+          "strength": 0.666667
+        }
+      ],
       "inputs": {
         "problem_description": {
           "value": "Checkout fails",
+          "value_ref": null,
           "source": "application_context",
           "source_ref": "context:problem_description",
-          "confidence": 1.0
+          "confidence": 1.0,
+          "classification": "public",
+          "redacted": false
         },
         "repository": {
           "value": "current",
+          "value_ref": null,
           "source": "application_context",
           "source_ref": "context:repository",
-          "confidence": 1.0
+          "confidence": 1.0,
+          "classification": "public",
+          "redacted": false
         }
       },
-      "unresolved_terms": []
+      "unresolved_terms": [],
+      "viability": "viable"
     }
   ],
   "selected_candidate": {
     "capability_id": "repository.fix_bug",
     "capability_version": "1.0.0",
-    "score": 1.0,
-    "match_reasons": ["Only capability available in the catalog."],
+    "score": 0.666667,
+    "evidence": [
+      {
+        "code": "MATCH-STATIC-JACCARD",
+        "summary": "Deterministic lexical match against contract text.",
+        "strength": 0.666667
+      }
+    ],
     "inputs": {
       "problem_description": {
         "value": "Checkout fails",
+        "value_ref": null,
         "source": "application_context",
         "source_ref": "context:problem_description",
-        "confidence": 1.0
+        "confidence": 1.0,
+        "classification": "public",
+        "redacted": false
       },
       "repository": {
         "value": "current",
+        "value_ref": null,
         "source": "application_context",
         "source_ref": "context:repository",
-        "confidence": 1.0
+        "confidence": 1.0,
+        "classification": "public",
+        "redacted": false
       }
     },
-    "unresolved_terms": []
+    "unresolved_terms": [],
+    "viability": "viable"
   },
   "gaps": [],
   "questions": [],
   "intent": {
-    "schema_version": "0.1",
+    "schema_version": "0.2",
     "intent_id": "fixed-id",
+    "result_id": "fixed-id",
     "capability_id": "repository.fix_bug",
     "capability_version": "1.0.0",
+    "catalog_digest": "3208ac7ea470d58b6541e49d0b41ead57d307aee9fc746ed56d91d0771a56429",
     "inputs": {
       "problem_description": {
         "value": "Checkout fails",
+        "value_ref": null,
         "source": "application_context",
         "source_ref": "context:problem_description",
-        "confidence": 1.0
+        "confidence": 1.0,
+        "classification": "public",
+        "redacted": false
       },
       "repository": {
         "value": "current",
+        "value_ref": null,
         "source": "application_context",
         "source_ref": "context:repository",
-        "confidence": 1.0
+        "confidence": 1.0,
+        "classification": "public",
+        "redacted": false
       }
     },
-    "deliverables": ["code_patch", "verification_report"],
+    "deliverables": [
+      "code_patch",
+      "verification_report"
+    ],
     "compiled_at": "2026-01-01T00:00:00Z"
   },
-  "diagnostics": []
+  "diagnostics": [],
+  "decision_codes": [
+    "D-READY"
+  ],
+  "trace": {
+    "trace_id": "fixed-id",
+    "created_at": "2026-01-01T00:00:00Z",
+    "reproducible": true,
+    "steps": [
+      {
+        "phase": "candidate_analysis",
+        "reason_code": "D-CANDIDATE-ANALYZED",
+        "capability_ref": "repository.fix_bug@1.0.0",
+        "field_paths": [],
+        "metadata": {
+          "blocking_gap_count": 0
+        }
+      },
+      {
+        "phase": "readiness",
+        "reason_code": "D-READY",
+        "capability_ref": "repository.fix_bug@1.0.0",
+        "field_paths": [],
+        "metadata": {}
+      }
+    ]
+  }
 }
-

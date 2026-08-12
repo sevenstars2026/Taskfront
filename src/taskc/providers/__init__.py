@@ -1,12 +1,21 @@
-from .base import CandidateProvider, ExtractionProvider, QuestionRenderer, StructuredModelProvider
+from .base import (
+    CandidateProvider,
+    ExtractionProvider,
+    InterpretationProvider,
+    QuestionRenderer,
+    StructuredModelProvider,
+)
 from .cache import CachedStructuredModelProvider, InMemoryProviderCache, ProviderCache
-from .model import ModelCandidateProvider, ModelExtractionProvider
+from .conformance import ProviderConformanceReport, run_provider_conformance, validate_candidate_batch
+from .model import ModelCandidateProvider, ModelExtractionProvider, ModelInterpretationProvider
 from .openai_compatible import OpenAICompatibleProvider
-from .static import StaticCandidateProvider, StaticExtractionProvider
+from .static import StaticCandidateProvider, StaticExtractionProvider, StaticInterpretationProvider
 
 __all__ = [
     "CachedStructuredModelProvider", "CandidateProvider", "ExtractionProvider",
-    "InMemoryProviderCache", "ModelCandidateProvider", "ModelExtractionProvider",
-    "OpenAICompatibleProvider", "ProviderCache", "QuestionRenderer",
-    "StaticCandidateProvider", "StaticExtractionProvider", "StructuredModelProvider",
+    "InMemoryProviderCache", "InterpretationProvider", "ModelCandidateProvider",
+    "ModelExtractionProvider", "ModelInterpretationProvider", "OpenAICompatibleProvider",
+    "ProviderCache", "ProviderConformanceReport", "QuestionRenderer", "StaticCandidateProvider",
+    "StaticExtractionProvider", "StaticInterpretationProvider", "StructuredModelProvider",
+    "run_provider_conformance", "validate_candidate_batch",
 ]

@@ -1,15 +1,23 @@
-schema_version: "0.1"
+schema_version: "0.2"
 id: repository.optimize_build
 version: 1.0.0
 description: Improve repository build speed.
-examples: [Make build faster, Reduce CI compile time]
-negative_examples: [Improve runtime performance]
+examples: [Make build faster, Reduce CI compile time, 缩短 CI 编译时间]
+negative_examples:
+  - Fix checkout
+  - Repair a failing test
+  - Diagnose repository defect
+  - Improve API runtime performance
+  - Improve runtime performance
+  - Reduce application latency
+  - Improve repository runtime performance
 required_inputs:
   repository: {type: string, description: Repository}
   optimization_goal:
     type: enum
     description: Build stage
     enum: [local_build, ci_build, both]
+    enum_aliases: {ci: ci_build}
 optional_inputs:
   ci_provider: {type: string, description: CI provider}
   target_duration_seconds: {type: integer, description: Target duration}
@@ -17,5 +25,11 @@ optional_inputs:
 conditional_requirements:
   - when: {field: optimization_goal, in: [ci_build, both]}
     require: [ci_provider]
+constraints:
+  - code: GAP-CONSTRAINT-MEASUREMENT
+    when: {field: target_duration_seconds, exists: true}
+    assert: {field: measurement_enabled, equals: true}
+    targets: [measurement_enabled]
+    message: A target duration requires before/after measurement.
+    blocking: true
 deliverables: [optimization_plan, code_changes, measurement]
-

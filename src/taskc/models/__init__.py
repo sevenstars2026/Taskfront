@@ -4,30 +4,41 @@ from .capability import (
     ConditionExpression,
     ConstraintSpec,
     InputSpec,
+    TruthValue,
 )
-from .clarification import ClarificationAnswer, ClarificationQuestion, CompilationSession
+from .clarification import AnswerRecord, ClarificationAnswer, ClarificationQuestion, CompilationSession
 from .diagnostics import (
+    BudgetExceededError,
     ContractValidationError,
     Diagnostic,
+    InternalCompilerError,
     InvalidInputError,
+    OperationError,
     ProviderError,
+    ProviderExecutionError,
+    StaleSessionError,
     TaskCompilerError,
 )
 from .intent import (
     CandidateDraft,
     CandidateIntent,
+    CapabilityRef,
     DispatchReadyIntent,
     ExtractionResult,
+    MatchEvidence,
     NormalizedRequest,
     SourcedValue,
 )
-from .result import CompilationResult, Gap
+from .result import CompilationResult, CompileEnvelope, Gap
+from .trace import ExplainTrace, TraceStep
 
 __all__ = [
-    "CandidateDraft", "CandidateIntent", "CapabilityContract", "ClarificationAnswer",
-    "ClarificationQuestion", "CompilationResult", "CompilationSession", "ConditionalRequirement",
+    "AnswerRecord", "BudgetExceededError", "CandidateDraft", "CandidateIntent",
+    "CapabilityContract", "CapabilityRef", "ClarificationAnswer", "ClarificationQuestion",
+    "CompilationResult", "CompilationSession", "CompileEnvelope", "ConditionalRequirement",
     "ConditionExpression", "ConstraintSpec", "ContractValidationError", "Diagnostic",
-    "DispatchReadyIntent", "ExtractionResult", "Gap", "InputSpec", "InvalidInputError",
-    "NormalizedRequest", "ProviderError", "SourcedValue", "TaskCompilerError",
+    "DispatchReadyIntent", "ExplainTrace", "ExtractionResult", "Gap", "InputSpec",
+    "InternalCompilerError", "InvalidInputError", "MatchEvidence", "NormalizedRequest",
+    "OperationError", "ProviderError", "ProviderExecutionError", "SourcedValue",
+    "StaleSessionError", "TaskCompilerError", "TraceStep", "TruthValue",
 ]
-

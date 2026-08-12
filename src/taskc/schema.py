@@ -3,17 +3,29 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from taskc.models import CapabilityContract, CompilationResult, DispatchReadyIntent
+from taskc.evaluation import EvaluationScenario
+from taskc.models import (
+    CapabilityContract,
+    CompilationResult,
+    CompilationSession,
+    CompileEnvelope,
+    DispatchReadyIntent,
+)
 
 
 SCHEMAS = {
-    "capability-contract-v0.1.schema.json": CapabilityContract,
-    "compilation-result-v0.1.schema.json": CompilationResult,
-    "dispatch-ready-intent-v0.1.schema.json": DispatchReadyIntent,
+    "capability-contract-v0.2.schema.json": CapabilityContract,
+    "compilation-result-v0.2.schema.json": CompilationResult,
+    "compile-envelope-v0.2.schema.json": CompileEnvelope,
+    "dispatch-ready-intent-v0.2.schema.json": DispatchReadyIntent,
+    "compilation-session-v0.2.schema.json": CompilationSession,
+    "evaluation-scenario-v0.2.schema.json": EvaluationScenario,
 }
 
 
-def export_schemas(directory: str | Path) -> list[Path]:
+def export_schemas(directory: str | Path, *, version: str = "0.2") -> list[Path]:
+    if version != "0.2":
+        raise ValueError("only schema version 0.2 can be exported by this release")
     target = Path(directory)
     target.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
@@ -29,4 +41,3 @@ def export_schemas(directory: str | Path) -> list[Path]:
 
 
 __all__ = ["SCHEMAS", "export_schemas"]
-

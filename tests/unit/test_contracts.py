@@ -51,6 +51,7 @@ def test_schema_version_and_semver_are_strict(fix_bug_contract: dict) -> None:
 def test_condition_all_and_any_are_supported() -> None:
     contract = CapabilityContract.model_validate(
         {
+            "schema_version": "0.2",
             "id": "example.condition",
             "version": "1.0.0",
             "description": "Condition example.",
@@ -75,3 +76,27 @@ def test_condition_all_and_any_are_supported() -> None:
     )
     assert contract.conditional_requirements[0].when.referenced_fields() == {"a", "b", "c"}
 
+
+def test_reserved_input_name_is_rejected(fix_bug_contract: dict) -> None:
+    fix_bug_contract["required_inputs"]["permission"] = {
+        "type": "boolean",
+        "description": "Must never be contract data.",
+    }
+    with pytest.raises(ContractValidationError):
+        load_catalog_objects([fix_bug_contract])
+
+
+def test_condition_complexity_is_bounded() -> None:
+    expression = {"field": "a", "equals": True}
+    for _ in range(11):
+        expression = {"all": [expression]}
+    with pytest.raises(Exception):
+        CapabilityContract.model_validate({
+            "schema_version": "0.2",
+            "id": "example.deep",
+            "version": "1.0.0",
+            "description": "Deep condition.",
+            "required_inputs": {"a": {"type": "boolean", "description": "A"}},
+            "conditional_requirements": [{"when": expression, "require": ["a"]}],
+            "deliverables": ["result"],
+        })

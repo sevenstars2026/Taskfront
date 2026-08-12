@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 
 from taskc.cli import main
 
@@ -40,10 +41,12 @@ def test_cli_session_round_trip(workspace_tmp, fix_bug_contract: dict, capsys) -
         ]
     ) == 2
     assert session.exists()
+    first_output = json.loads(capsys.readouterr().out)
+    question_id = first_output["result"]["questions"][0]["id"]
     assert main(
         [
             "continue", str(session), "--contracts", str(contract),
-            "--answer", "q-problem-description=Checkout returns 500", "--json",
+            "--answer", f"{question_id}=Checkout returns 500", "--json",
         ]
     ) == 0
     assert '"status": "ready"' in capsys.readouterr().out
@@ -52,4 +55,25 @@ def test_cli_session_round_trip(workspace_tmp, fix_bug_contract: dict, capsys) -
 def test_cli_schema_export(workspace_tmp, capsys) -> None:
     target = workspace_tmp / "schemas"
     assert main(["schema", "export", "--output", str(target)]) == 0
-    assert len(list(target.glob("*.schema.json"))) == 3
+    assert len(list(target.glob("*.schema.json"))) == 6
+
+
+def test_cli_migrates_v01_contract_with_machine_report(
+    workspace_tmp, fix_bug_contract: dict, capsys
+) -> None:
+    old = deepcopy(fix_bug_contract)
+    old["schema_version"] = "0.1"
+    old["required_inputs"]["repository"].pop("source_policy")
+    old["required_inputs"]["repository"]["must_be_explicit"] = True
+    source = _write_contract(workspace_tmp, old)
+    output = workspace_tmp / "migrated"
+    assert main([
+        "contract", "migrate", str(source),
+        "--from", "0.1", "--to", "0.2",
+        "--output", str(output), "--json",
+    ]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["migrations"][0]["valid"] is True
+    migrated = json.loads((output / source.name).read_text(encoding="utf-8"))
+    assert migrated["schema_version"] == "0.2"
+    assert migrated["required_inputs"]["repository"]["source_policy"] == "trusted"

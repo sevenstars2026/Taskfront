@@ -8,9 +8,10 @@ from taskc.models.common import JsonValue, StrictModel
 
 class TelemetryEvent(StrictModel):
     name: Literal[
-        "compilation.started", "contracts.validated", "candidates.generated",
-        "fields.extracted", "gaps.computed", "questions.planned", "compilation.ready",
-        "compilation.blocked", "provider.failed",
+        "compilation.started", "contracts.validated", "provider.requested",
+        "provider.cache_hit", "provider.completed", "provider.failed", "candidates.generated",
+        "fields.extracted", "fields.resolved", "constraints.evaluated", "gaps.computed",
+        "questions.planned", "compilation.ready", "compilation.blocked", "compilation.failed",
     ]
     occurred_at: datetime
     request_id: str
@@ -23,4 +24,3 @@ class TelemetryEvent(StrictModel):
     token_usage: int | None = None
     error_code: str | None = None
     metadata: dict[str, JsonValue] = {}
-

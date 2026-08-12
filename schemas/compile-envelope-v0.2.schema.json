@@ -1,0 +1,1074 @@
+{
+  "$defs": {
+    "CandidateIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "capability_version": {
+          "title": "Capability Version",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/MatchEvidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "inputs": {
+          "additionalProperties": {
+            "$ref": "#/$defs/SourcedValue"
+          },
+          "title": "Inputs",
+          "type": "object"
+        },
+        "score": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Score",
+          "type": "number"
+        },
+        "unresolved_terms": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unresolved Terms",
+          "type": "array"
+        },
+        "viability": {
+          "default": "viable",
+          "enum": [
+            "viable",
+            "rejected"
+          ],
+          "title": "Viability",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capability_id",
+        "capability_version",
+        "score",
+        "evidence",
+        "inputs"
+      ],
+      "title": "CandidateIntent",
+      "type": "object"
+    },
+    "ClarificationQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_type": {
+          "enum": [
+            "text",
+            "single_choice",
+            "multi_choice",
+            "boolean",
+            "integer",
+            "number",
+            "json"
+          ],
+          "title": "Answer Type",
+          "type": "string"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "priority": {
+          "title": "Priority",
+          "type": "number"
+        },
+        "reason_code": {
+          "title": "Reason Code",
+          "type": "string"
+        },
+        "result_id": {
+          "title": "Result Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "targets": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Targets",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "result_id",
+        "revision",
+        "text",
+        "targets",
+        "answer_type",
+        "priority",
+        "reason_code"
+      ],
+      "title": "ClarificationQuestion",
+      "type": "object"
+    },
+    "CompilationResult": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "properties": {
+                "gaps": {
+                  "not": {
+                    "contains": {
+                      "properties": {
+                        "blocking": {
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "blocking"
+                      ],
+                      "type": "object"
+                    }
+                  }
+                },
+                "intent": {
+                  "not": {
+                    "type": "null"
+                  }
+                },
+                "questions": {
+                  "maxItems": 0
+                },
+                "selected_candidate": {
+                  "not": {
+                    "type": "null"
+                  }
+                },
+                "status": {
+                  "const": "ready"
+                }
+              },
+              "required": [
+                "status",
+                "selected_candidate",
+                "intent",
+                "questions",
+                "gaps"
+              ]
+            },
+            {
+              "properties": {
+                "gaps": {
+                  "contains": {
+                    "properties": {
+                      "blocking": {
+                        "const": true
+                      }
+                    },
+                    "required": [
+                      "blocking"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "intent": {
+                  "type": "null"
+                },
+                "questions": {
+                  "minItems": 1
+                },
+                "selected_candidate": {
+                  "not": {
+                    "type": "null"
+                  }
+                },
+                "status": {
+                  "const": "needs_clarification"
+                }
+              },
+              "required": [
+                "status",
+                "selected_candidate",
+                "questions",
+                "gaps"
+              ]
+            },
+            {
+              "properties": {
+                "candidates": {
+                  "contains": {
+                    "properties": {
+                      "viability": {
+                        "const": "viable"
+                      }
+                    },
+                    "required": [
+                      "viability"
+                    ],
+                    "type": "object"
+                  },
+                  "minContains": 2
+                },
+                "intent": {
+                  "type": "null"
+                },
+                "questions": {
+                  "minItems": 1
+                },
+                "selected_candidate": {
+                  "type": "null"
+                },
+                "status": {
+                  "const": "ambiguous"
+                }
+              },
+              "required": [
+                "status",
+                "questions",
+                "candidates"
+              ]
+            },
+            {
+              "properties": {
+                "gaps": {
+                  "contains": {
+                    "properties": {
+                      "blocking": {
+                        "const": true
+                      },
+                      "kind": {
+                        "const": "conflicting"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "blocking"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "intent": {
+                  "type": "null"
+                },
+                "questions": {
+                  "minItems": 1
+                },
+                "selected_candidate": {
+                  "not": {
+                    "type": "null"
+                  }
+                },
+                "status": {
+                  "const": "conflicting"
+                }
+              },
+              "required": [
+                "status",
+                "selected_candidate",
+                "questions",
+                "gaps"
+              ]
+            },
+            {
+              "properties": {
+                "candidates": {
+                  "not": {
+                    "contains": {
+                      "properties": {
+                        "viability": {
+                          "const": "viable"
+                        }
+                      },
+                      "required": [
+                        "viability"
+                      ],
+                      "type": "object"
+                    }
+                  }
+                },
+                "decision_codes": {
+                  "minItems": 1
+                },
+                "intent": {
+                  "type": "null"
+                },
+                "questions": {
+                  "maxItems": 0
+                },
+                "selected_candidate": {
+                  "type": "null"
+                },
+                "status": {
+                  "const": "unsupported"
+                }
+              },
+              "required": [
+                "status",
+                "questions",
+                "candidates",
+                "decision_codes"
+              ]
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/CandidateIntent"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "catalog_digest": {
+          "title": "Catalog Digest",
+          "type": "string"
+        },
+        "decision_codes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Decision Codes",
+          "type": "array"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "gaps": {
+          "items": {
+            "$ref": "#/$defs/Gap"
+          },
+          "title": "Gaps",
+          "type": "array"
+        },
+        "intent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DispatchReadyIntent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/ClarificationQuestion"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "reproducible": {
+          "default": true,
+          "title": "Reproducible",
+          "type": "boolean"
+        },
+        "result_id": {
+          "title": "Result Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 0,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "0.2",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "selected_candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CandidateIntent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "needs_clarification",
+            "ambiguous",
+            "conflicting",
+            "unsupported"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "trace": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExplainTrace"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "schema_version",
+        "result_id",
+        "session_id",
+        "revision",
+        "catalog_digest",
+        "status"
+      ],
+      "title": "CompilationResult",
+      "type": "object"
+    },
+    "Diagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "contract_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Id"
+        },
+        "field_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Path"
+        },
+        "hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Hint"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "phase": {
+          "default": "unknown",
+          "title": "Phase",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "Diagnostic",
+      "type": "object"
+    },
+    "DispatchReadyIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "title": "Capability Id",
+          "type": "string"
+        },
+        "capability_version": {
+          "title": "Capability Version",
+          "type": "string"
+        },
+        "catalog_digest": {
+          "title": "Catalog Digest",
+          "type": "string"
+        },
+        "compiled_at": {
+          "format": "date-time",
+          "title": "Compiled At",
+          "type": "string"
+        },
+        "deliverables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Deliverables",
+          "type": "array"
+        },
+        "inputs": {
+          "additionalProperties": {
+            "$ref": "#/$defs/SourcedValue"
+          },
+          "title": "Inputs",
+          "type": "object"
+        },
+        "intent_id": {
+          "title": "Intent Id",
+          "type": "string"
+        },
+        "result_id": {
+          "title": "Result Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "0.2",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "intent_id",
+        "result_id",
+        "capability_id",
+        "capability_version",
+        "catalog_digest",
+        "inputs",
+        "deliverables",
+        "compiled_at"
+      ],
+      "title": "DispatchReadyIntent",
+      "type": "object"
+    },
+    "ExplainTrace": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "reproducible": {
+          "default": true,
+          "title": "Reproducible",
+          "type": "boolean"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/TraceStep"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "trace_id": {
+          "title": "Trace Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "trace_id",
+        "created_at"
+      ],
+      "title": "ExplainTrace",
+      "type": "object"
+    },
+    "Gap": {
+      "additionalProperties": false,
+      "properties": {
+        "blocking": {
+          "title": "Blocking",
+          "type": "boolean"
+        },
+        "candidate_values": {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Candidate Values",
+          "type": "array"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "field_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Field Paths",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "missing",
+            "ambiguous",
+            "conflicting",
+            "unverifiable",
+            "constraint"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "suggested_resolution": {
+          "enum": [
+            "ask_user",
+            "use_context",
+            "apply_default",
+            "choose_candidate",
+            "reject"
+          ],
+          "title": "Suggested Resolution",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "kind",
+        "message",
+        "blocking",
+        "suggested_resolution"
+      ],
+      "title": "Gap",
+      "type": "object"
+    },
+    "JsonValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "array"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "MatchEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "strength": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Strength",
+          "type": "number"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "summary",
+        "strength"
+      ],
+      "title": "MatchEvidence",
+      "type": "object"
+    },
+    "OperationError": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "invalid_contract",
+            "invalid_input",
+            "provider_failure",
+            "budget_exceeded",
+            "stale_session",
+            "internal_error"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "diagnostics": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Diagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "retryable": {
+          "default": false,
+          "title": "Retryable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "category",
+        "message"
+      ],
+      "title": "OperationError",
+      "type": "object"
+    },
+    "SourcedValue": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "value"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "value_ref"
+                    ]
+                  }
+                ]
+              },
+              "properties": {
+                "redacted": {
+                  "const": true
+                }
+              },
+              "required": [
+                "redacted"
+              ]
+            },
+            {
+              "not": {
+                "required": [
+                  "value_ref"
+                ]
+              },
+              "properties": {
+                "classification": {
+                  "not": {
+                    "const": "secret"
+                  }
+                },
+                "redacted": {
+                  "const": false
+                }
+              },
+              "required": [
+                "value"
+              ]
+            },
+            {
+              "not": {
+                "required": [
+                  "value"
+                ]
+              },
+              "properties": {
+                "redacted": {
+                  "const": false
+                }
+              },
+              "required": [
+                "value_ref"
+              ]
+            }
+          ]
+        }
+      ],
+      "properties": {
+        "classification": {
+          "default": "public",
+          "enum": [
+            "public",
+            "sensitive",
+            "secret"
+          ],
+          "title": "Classification",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "redacted": {
+          "default": false,
+          "title": "Redacted",
+          "type": "boolean"
+        },
+        "source": {
+          "enum": [
+            "user_request",
+            "application_context",
+            "clarification_answer",
+            "contract_default",
+            "model_inference"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "source_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Ref"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JsonValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Ref"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "SourcedValue",
+      "type": "object"
+    },
+    "TraceStep": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capability Ref"
+        },
+        "field_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Field Paths",
+          "type": "array"
+        },
+        "metadata": {
+          "additionalProperties": {
+            "$ref": "#/$defs/JsonValue"
+          },
+          "title": "Metadata",
+          "type": "object"
+        },
+        "phase": {
+          "title": "Phase",
+          "type": "string"
+        },
+        "reason_code": {
+          "title": "Reason Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "phase",
+        "reason_code"
+      ],
+      "title": "TraceStep",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "error": {
+              "type": "null"
+            },
+            "kind": {
+              "const": "result"
+            },
+            "result": {
+              "not": {
+                "type": "null"
+              }
+            }
+          },
+          "required": [
+            "kind",
+            "result"
+          ]
+        },
+        {
+          "properties": {
+            "error": {
+              "not": {
+                "type": "null"
+              }
+            },
+            "kind": {
+              "const": "error"
+            },
+            "result": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "kind",
+            "error"
+          ]
+        }
+      ]
+    }
+  ],
+  "properties": {
+    "error": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OperationError"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "kind": {
+      "enum": [
+        "result",
+        "error"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CompilationResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "const": "0.2",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "serialization_profile": {
+      "default": "internal",
+      "enum": [
+        "internal",
+        "public",
+        "session"
+      ],
+      "title": "Serialization Profile",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind"
+  ],
+  "title": "CompileEnvelope",
+  "type": "object"
+}

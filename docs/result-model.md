@@ -1,25 +1,29 @@
-# Compilation result model
+# 0.2 结果模型
 
-Every result uses schema version `0.1` and one of these states:
+`CompilationResult` 使用以下领域状态：
 
-- `ready`: one candidate satisfies all deterministic readiness checks and an
-  intent is present.
-- `needs_clarification`: one selected candidate has blocking missing,
-  unverifiable, or field-level ambiguous inputs.
-- `ambiguous`: multiple capabilities remain plausible.
-- `conflicting`: equally authoritative values cannot be reconciled.
-- `unsupported`: no valid catalog capability matches.
-- `invalid_contract`: reserved for host integrations that represent contract
-  loading failures as results; the Python loader raises a typed validation error
-  before compilation.
+- `ready`：恰好一个候选通过全部确定性检查，并包含 `DispatchReadyIntent`；
+- `needs_clarification`：已有选中候选，但存在可询问的 blocking Gap；
+- `ambiguous`：至少两个可行能力仍然合理；
+- `conflicting`：同优先级来源值冲突；
+- `unsupported`：Provider 成功返回，但没有正向可行能力。
 
-`Gap` objects have stable codes, a kind, optional field path, blocking flag,
-candidate values, and a suggested resolution. `Diagnostic` objects report
-contract, input, and provider failures without including secrets or complete
-prompts.
+每个状态的不变量同时由 Pydantic 模型和 `oneOf` JSON Schema 约束。例如，只含 `{"status":"ready"}` 的对象必定无效。
 
-`DispatchReadyIntent` binds a concrete capability ID and version, sourced
-inputs, declared deliverables, a generated intent ID, and compilation time. It
-contains no permission, approval, policy, credential, executable code, effect,
-or workflow bytecode fields.
+`Gap` 表示用户或宿主可通过补充、选择或修正信息解决的领域问题，包含复数 `field_paths`、稳定 code、blocking 标记和建议处理方式。`Diagnostic` 表示契约、输入、Provider 或实现问题，两者不能互换。
+
+操作错误通过 `CompileEnvelope` 与领域结果分离：
+
+```text
+invalid_contract
+invalid_input
+provider_failure
+budget_exceeded
+stale_session
+internal_error
+```
+
+Provider 超时或非法响应不会返回 `unsupported`。CLI 默认输出 public Envelope，并对 sensitive/secret 值脱敏。
+
+`DispatchReadyIntent` 固定精确能力版本、目录摘要、来源化输入、交付物、结果 ID 和编译时间。它不包含授权、凭据、执行代码或工具调用。
 

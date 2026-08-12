@@ -100,6 +100,14 @@ def load_catalog(paths: Iterable[str | Path]) -> CapabilityCatalog:
 
 def load_catalog_objects(objects: Iterable[dict[str, Any]]) -> CapabilityCatalog:
     contracts = [validate_contract_data(item, f"<object:{index}>") for index, item in enumerate(objects)]
+    if not contracts:
+        diagnostic = Diagnostic(
+            code="E-CONTRACT-008",
+            severity="error",
+            phase="contract_load",
+            message="No capability contracts were provided.",
+        )
+        raise ContractValidationError(diagnostic.message, [diagnostic])
     validate_catalog(contracts)
     return CapabilityCatalog.build(contracts)
 
